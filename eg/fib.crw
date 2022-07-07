@@ -1,0 +1,9 @@
+;; fib.crw - Nth number in the Fibonacci sequence
+
+(def (&fib n prev curr)
+  (cond ((< n 2) curr)
+        (else (&fib (- n 1) curr (+ prev curr)))))
+
+(def (fib n)
+  (cond ((< n 2) n)
+        (else (&fib n 0 1))))

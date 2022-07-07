@@ -1,0 +1,11 @@
+;; fac.crw - factorial of N
+
+(def (&fac n)
+  (if (= n 0)
+      1
+      (* n (&fac (- n 1)))))
+
+(def (fac n)
+  (if (< n 0)
+      -1
+      (&fac n)))

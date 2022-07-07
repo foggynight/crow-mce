@@ -1,0 +1,32 @@
+;; io.crw - CROW IO library
+
+;; (read-line [PORT [LIMIT]]) -> STRING
+(def (read-line . rest)
+  (def port (if (not (null? rest))
+                (car rest)
+                (curr-in-port)))
+  (def limit (if (and (not (null? rest))
+                      (not (null? (cdr rest))))
+                 (cadr rest)))
+  (let ((c (peek-char port)))
+    (if (eof? c) c
+        ((% (lst) (list->str lst))
+         (let loop ((lim limit))
+           (let ((c (if (or (null? lim)
+                            (> lim 0))
+                        (read-char port))))
+             (if (and c (not (eof? c)) (char<> c #\newline))
+                 (cons c (loop (if (not (null? lim))
+                                   (- lim 1)))))))))))
+
+;; (write-line STRING [PORT]) -> ()
+(def (write-line s . rest)
+  (def len (str-len s))
+  (def port (if (not (null? rest))
+                (car rest)
+                (curr-out-port)))
+  (let loop ((i 0))
+    (if (< i len)
+        (begin (write-char (str-ref s i) port)
+               (loop (+ i 1)))
+        (newline port))))

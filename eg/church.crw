@@ -1,0 +1,30 @@
+;; church.crw - Church numerals
+
+(def (zero) '())
+(def zero? null?)
+(def (next n) (lambda () n))
+(def (prev n) (n))
+
+(def (add n1 n2)
+  (if (zero? n2)
+      n1
+      (add (next n1) (prev n2))))
+
+(def (sub n1 n2)
+  (if (zero? n2)
+      n1
+      (sub (prev n1) (prev n2))))
+
+(def (read n)
+  (let loop ((chr (zero))
+             (num n))
+    (if (= num 0)
+        chr
+        (loop (next chr) (- num 1)))))
+
+(def (show n)
+  (let loop ((chr n)
+             (num 0))
+    (if (zero? chr)
+        num
+        (loop (prev chr) (+ num 1)))))

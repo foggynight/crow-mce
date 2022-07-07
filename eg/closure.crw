@@ -1,0 +1,7 @@
+;; closure.crw - lexical closure
+
+(def click
+  (let ((cnt 0))
+    (% ()
+      (set! cnt (+ cnt 1))
+      cnt)))

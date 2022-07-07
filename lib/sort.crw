@@ -1,0 +1,22 @@
+(def (sort_insert e lst pred)
+  (cond ((null? lst) (cons e '()))
+        ((pred e (car lst)) (cons e lst))
+        (else (cons (car lst) (sort_insert e (cdr lst) pred)))))
+
+(def (sort_sort lst pred)
+  (if (not (null? lst))
+      (sort_insert (car lst) (sort_sort (cdr lst) pred) pred)))
+
+(def (list-sort lst pred)
+  (sort_sort lst pred))
+
+(def (vec-sort vec pred)
+  (list->vec (list-sort (vec->list vec) pred)))
+
+(def (str-sort str pred)
+  (list->str (list-sort (str->list str) pred)))
+
+(def (sort seq pred)
+  (cond ((vec? seq) (vec-sort seq pred))
+        ((str? seq) (str-sort seq pred))
+        (else (list-sort seq pred))))

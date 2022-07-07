@@ -1,0 +1,9 @@
+;; lambda.crw - LAMBDA argument syntaxes
+
+(def f1 (% x x))
+(def g1 (% (x) x))
+(def h1 (% (x . y) (list x y)))
+
+(def (f2 . x) x)
+(def (g2 x) x)
+(def (h2 x . y) (list x y))

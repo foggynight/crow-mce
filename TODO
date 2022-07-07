@@ -1,0 +1,12 @@
+DONE improve error handling
+DONE add error checking to special forms
+DONE add lambda argument syntaxes
+DONE add nested definitions
+DONE add named LET
+DONE add QUASIQUOTE
+TODO add DO special form
+TODO return NULL from CAR/CDR of NULL
+TODO make EVAL/APPLY procedures
+TODO add symbolic macros
+TODO add WHEN and UNLESS
+TODO add arguments (-q, --quiet)

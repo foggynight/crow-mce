@@ -1,0 +1,31 @@
+;; string.crw - CROW string library
+
+;; (str-memc CHAR STRING) -> INT | NULL
+(def (str-memc c s)
+  (def len (str-len s))
+  (let loop ((i 0))
+    (if (< i len)
+        (if (char= c (str-ref s i))
+            i
+            (loop (1+ i))))))
+
+;; (str-split STRING [DELIMS [KEEP-EMPTY]]) -> (STRING*)
+(def (str-split s . rest)
+  (def len (str-len s))
+  (def delim (if (null? rest)
+                 " \t\n\f\r\v"
+                 (car rest)))
+  (def keep (if (and (not (null? rest))
+                     (not (null? (cdr rest))))
+                (cadr rest)))
+  (let loop ((i 0)      ; index of current character
+             (last -1)) ; index of last delim character
+    (if (< i len)
+        (if (str-memc (str-ref s i) delim)
+            (if (or keep (< (1+ last) i))
+                (cons (substr s (1+ last) i)
+                      (loop (1+ i) i))
+                (loop (1+ i) i))
+            (loop (1+ i) last))
+        (cond ((< (1+ last) i) (list (substr s (1+ last) i)))
+              (keep (list ""))))))

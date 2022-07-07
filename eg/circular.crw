@@ -1,0 +1,9 @@
+;; circular.crw - contrived example to demonstrate circular definitions
+
+(def (f n)
+  (cond ((< n 0) 'f)
+        (else (g (- n 1)))))
+
+(def (g n)
+  (cond ((< n 0) 'g)
+        (else (f (- n 1)))))

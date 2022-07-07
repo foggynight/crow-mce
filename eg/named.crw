@@ -1,0 +1,8 @@
+;; named.crw - named let
+
+(let loop ((x 0))
+  (if (< x 10)
+      (begin (print x)
+             (loop (+ x 1)))))
+
+(exit)

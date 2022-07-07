@@ -1,0 +1,8 @@
+;; invert-bt.crw - invert a binary tree
+
+;; tree -> (sexp tree tree) | ()
+(def (invert tree)
+  (if (not (null? tree))
+      (list (car tree)
+            (invert (caddr tree))
+            (invert (cadr tree)))))

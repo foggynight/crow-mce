@@ -1,0 +1,39 @@
+#!/usr/bin/env crow
+
+;; postfix.crw - postfix calculator
+;; USAGE: ./postfix.crw
+
+(import 'io)
+(import 'string)
+
+(def op-str "+-*/")
+
+(def (eval-tok tok stk)
+  (let ((op-i (str-memc (str-ref tok 0) op-str)))
+    (if op-i
+        (if (< (length stk) 2)
+            (error 'postfix "stack underflow")
+            (let ((proc (eval (str->sym (str (str-ref op-str op-i))))))
+              (cons (proc (cadr stk) (car stk))
+                    (cddr stk))))
+        (let ((num (str->num tok)))
+          (if num
+              (cons (str->num tok) stk)
+              (error 'postfix "not an operator or number" tok))))))
+
+(def (eval-toks toks)
+  (def stk '())
+  (let loop ((t toks))
+    (if (null? t)
+        (car stk)
+        (body (set! stk (eval-tok (car t) stk))
+              (loop (cdr t))))))
+
+(def (main)
+  (let loop ((line (read-line)))
+    (if (not (eof? line))
+        (body (print (eval-toks (str-split line)))
+              (loop (read-line))))))
+
+(main)
+(exit)

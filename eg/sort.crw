@@ -1,0 +1,10 @@
+;; sort.crw - sort a list using insertion sort
+
+(def (sort pred lst)
+  (def (insert pred elem lst)
+    (if (or (null? lst)
+            (pred elem (car lst)))
+        (cons elem lst)
+        (cons (car lst) (insert pred elem (cdr lst)))))
+  (if (not (null? lst))
+      (insert pred (car lst) (sort pred (cdr lst)))))

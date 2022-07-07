@@ -1,0 +1,34 @@
+;; list.crw - CROW list library
+
+(def (mem proc e lst)
+  (cond ((null? lst) '())
+        ((proc e (car lst)) lst)
+        (else (mem proc e (cdr lst)))))
+
+(def (memq e lst) (mem eq? e lst))
+(def (memv e lst) (mem eqv? e lst))
+(def (member e lst) (mem equal? e lst))
+
+(def (for1 proc lst)
+  (if (cons? lst)
+      (begin (proc (car lst))
+             (for1 proc (cdr lst)))))
+
+(def (for proc . lsts)
+  (def (&for lsts)
+    (if (not (memq '() lsts))
+        (begin (apply proc (map1 car lsts))
+               (&for (map1 cdr lsts)))))
+  (if lsts (&for lsts)))
+
+(def (map1 proc lst)
+  (if (cons? lst)
+      (cons (proc (car lst))
+            (map1 proc (cdr lst)))))
+
+(def (map proc . lsts)
+  (def (&map lsts)
+    (if (not (memq '() lsts))
+        (cons (apply proc (map1 car lsts))
+              (&map (map1 cdr lsts)))))
+  (if lsts (&map lsts)))

@@ -1,0 +1,10 @@
+;; vector.crw - CROW vector library
+
+(def (vec-copy vec)
+  (def len (vec-len vec))
+  (def new (make-vec len))
+  (let loop ((i 0))
+    (if (< i len)
+        (begin (vec-set! new i (vec-ref vec i))
+               (loop (+ i 1))))
+    new))
