@@ -5,10 +5,24 @@
 (import (chicken format)
         simple-exceptions)
 
+;; proc ------------------------------------------------------------------------
+
+(define-record-type proc
+  (make-proc args body env)
+  proc?
+  (args proc-args proc-args-set!)
+  (body proc-body proc-body-set!)
+  (env proc-env proc-env-set!))
+
+;; Determine if `proc` is a CHICKEN Scheme procedure.
+(define (primitive? proc) (procedure? proc))
+
+(include "prim.scm") ; Define primitive procedures.
+
 ;; env -------------------------------------------------------------------------
 
 (define (env-user) '())
-(define (env-core) '((x . 1) (y . 2) (z . 3)))
+(define (env-core) (primitives))
 (define (env-toplevel) (list (env-user) (env-core)))
 
 (define (env-lookup env sym)
@@ -34,15 +48,6 @@
                       (bind-formals (cdr args) (cdr vals))))))
   (cons (bind-formals args vals) env))
 
-;; proc ------------------------------------------------------------------------
-
-(define-record-type proc
-  (make-proc args body env)
-  proc?
-  (args proc-args proc-args-set!)
-  (body proc-body proc-body-set!)
-  (env proc-env proc-env-set!))
-
 ;; eval ------------------------------------------------------------------------
 
 (define (eval-list! lst env)
@@ -65,8 +70,8 @@
 
 (define (eval-special! e env)
   (define name (car e))
-  (define spec #t)    ; Is E a special form?
-  (define val (void)) ; If SPEC: VAL is result of form, else: void.
+  (define spec #t)    ; Is `e` a special form?
+  (define val (void)) ; If `spec`: `val` is result of form, else: void.
   (if (not (symbol? name))
       (set! spec #f)
       (let ((body (cdr e)))
@@ -90,11 +95,11 @@
         (else (error 'crow-eval "unknown expression type"))))
 
 (define (crow-apply! proc args)
-  (cond ;((primitive? proc))
+  (cond ((primitive? proc) (apply proc args))
         ((proc? proc) (crow-eval! (proc-body proc)
-                                     (env-bind-formals (proc-env proc)
-                                                       (proc-args proc)
-                                                       args)))
+                                  (env-bind-formals (proc-env proc)
+                                                    (proc-args proc)
+                                                    args)))
         (else)))
 
 ;; main ------------------------------------------------------------------------
