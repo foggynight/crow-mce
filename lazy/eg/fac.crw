@@ -1,0 +1,4 @@
+(def! fac
+  (lambda (n)
+    (cond ((= n 0) 1)
+          (else (* n (fac (- n 1)))))))

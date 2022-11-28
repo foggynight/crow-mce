@@ -62,6 +62,15 @@
               val
               (loop! (cdr b)))))))
 
+(define (eval-special-cond! clauses env)
+  (if (null? clauses)
+      (void)
+      (let ((pred (caar clauses))
+            (body (cdar clauses)))
+        (cond ((eq? 'else pred) (crow-eval! (cons 'body body) env))
+              ((crow-eval! pred env) (crow-eval! (cons 'body body) env))
+              (else (eval-special-cond! (cdr clauses) env))))))
+
 (define (eval-special-def! name body env)
   (env-insert! env name (crow-eval! (car body) env)))
 
@@ -77,6 +86,7 @@
       (let ((body (cdr e)))
         (case name
           ((body) (set! val (eval-special-body! body env))) ; TODO: Add a body! version?
+          ((cond) (set! val (eval-special-cond! body env)))
           ((def!) (eval-special-def! (car body) (cdr body) env))
           ((lambda) (set! val (eval-special-lambda (car body) (cdr body) env)))
           ((quote) (set! val (car body)))
@@ -84,15 +94,15 @@
   (values spec val))
 
 (define (crow-eval! e env)
-  (cond ((null? e) (error 'crow-eval "invalid expression" e))  ; null
-        ((or (number? e) (char? e) (string? e) (vector? e)) e) ; literal
-        ((symbol? e) (env-lookup env e))                       ; symbol
-        ((list? e)                                             ; list
+  (cond ((null? e) (error 'crow-eval! "invalid expression" e))
+        ((or (boolean? e) (number? e) (char? e) (string? e) (vector? e)) e)
+        ((symbol? e) (env-lookup env e))
+        ((list? e)
          (let-values (((spec val) (eval-special! e env)))
            (if spec val (crow-apply! (crow-eval! (car e) env)
                                      (eval-list! (cdr e) env)))))
-        ((pair? e) e)                                          ; cons
-        (else (error 'crow-eval "unknown expression type"))))
+        ((pair? e) e)
+        (else (error 'crow-eval! "unknown expression type"))))
 
 (define (crow-apply! proc args)
   (cond ((primitive? proc) (apply proc args))
