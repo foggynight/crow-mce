@@ -34,14 +34,14 @@
                       (bind-formals (cdr args) (cdr vals))))))
   (cons (bind-formals args vals) env))
 
-;; closure ---------------------------------------------------------------------
+;; proc ------------------------------------------------------------------------
 
-(define-record-type closure
-  (make-closure args body env)
-  closure?
-  (args closure-args closure-args-set!)
-  (body closure-body closure-body-set!)
-  (env closure-env closure-env-set!))
+(define-record-type proc
+  (make-proc args body env)
+  proc?
+  (args proc-args proc-args-set!)
+  (body proc-body proc-body-set!)
+  (env proc-env proc-env-set!))
 
 ;; eval ------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@
   (env-insert! env name (crow-eval! (car body) env)))
 
 (define (eval-special-lambda args body env)
-  (make-closure args (cons 'body body) env))
+  (make-proc args (cons 'body body) env))
 
 (define (eval-special! e env)
   (define name (car e))
@@ -71,7 +71,7 @@
       (set! spec #f)
       (let ((body (cdr e)))
         (case name
-          ((body) (set! val (eval-special-body! body env)))
+          ((body) (set! val (eval-special-body! body env))) ; TODO: Add a body! version?
           ((def!) (eval-special-def! (car body) (cdr body) env))
           ((lambda) (set! val (eval-special-lambda (car body) (cdr body) env)))
           ((quote) (set! val (car body)))
@@ -91,9 +91,9 @@
 
 (define (crow-apply! proc args)
   (cond ;((primitive? proc))
-        ((closure? proc) (crow-eval! (closure-body proc)
-                                     (env-bind-formals (closure-env proc)
-                                                       (closure-args proc)
+        ((proc? proc) (crow-eval! (proc-body proc)
+                                     (env-bind-formals (proc-env proc)
+                                                       (proc-args proc)
                                                        args)))
         (else)))
 
