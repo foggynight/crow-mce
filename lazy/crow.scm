@@ -23,21 +23,59 @@
 (define (env-insert! env sym val)
   (set-car! env (cons (cons sym val) (car env))))
 
+(define (env-bind-formals env args vals)
+  (define (bind-formals args vals)
+    (cond ((null? args)
+           (if (null? vals)
+               '()
+               (error 'env-bind-formals "too many arguments")))
+          ((null? vals) (error 'env-bind-formals "missing arguments"))
+          (else (cons (cons (car args) (car vals))
+                      (bind-formals (cdr args) (cdr vals))))))
+  (cons (bind-formals args vals) env))
+
+;; closure ---------------------------------------------------------------------
+
+(define-record-type closure
+  (make-closure args body env)
+  closure?
+  (args closure-args closure-args-set!)
+  (body closure-body closure-body-set!)
+  (env closure-env closure-env-set!))
+
 ;; eval ------------------------------------------------------------------------
 
-(define (eval-special-define! name body env)
+(define (eval-list! lst env)
+  (map (lambda (e) (crow-eval! e env)) lst))
+
+(define (eval-special-body! body env)
+  (if (null? body)
+      (void)
+      (let loop! ((b body))
+        (let ((val (crow-eval! (car b) env)))
+          (if (null? (cdr b))
+              val
+              (loop! (cdr b)))))))
+
+(define (eval-special-def! name body env)
   (env-insert! env name (crow-eval! (car body) env)))
+
+(define (eval-special-lambda args body env)
+  (make-closure args (cons 'body body) env))
 
 (define (eval-special! e env)
   (define name (car e))
-  (define spec #f)
-  (define val (void))
-  (when (symbol? name)
-    (set! spec #t)
-    (let ((body (cdr e)))
-      (case name
-        ((quote) (set! val (car body)))
-        ((def!) (eval-special-define! (car body) (cdr body) env)))))
+  (define spec #t)    ; Is E a special form?
+  (define val (void)) ; If SPEC: VAL is result of form, else: void.
+  (if (not (symbol? name))
+      (set! spec #f)
+      (let ((body (cdr e)))
+        (case name
+          ((body) (set! val (eval-special-body! body env)))
+          ((def!) (eval-special-def! (car body) (cdr body) env))
+          ((lambda) (set! val (eval-special-lambda (car body) (cdr body) env)))
+          ((quote) (set! val (car body)))
+          (else (set! spec #f)))))
   (values spec val))
 
 (define (crow-eval! e env)
@@ -46,9 +84,18 @@
         ((symbol? e) (env-lookup env e))                       ; symbol
         ((list? e)                                             ; list
          (let-values (((spec val) (eval-special! e env)))
-           (if spec val)))
+           (if spec val (crow-apply! (crow-eval! (car e) env)
+                                     (eval-list! (cdr e) env)))))
         ((pair? e) e)                                          ; cons
         (else (error 'crow-eval "unknown expression type"))))
+
+(define (crow-apply! proc args)
+  (cond ;((primitive? proc))
+        ((closure? proc) (crow-eval! (closure-body proc)
+                                     (env-bind-formals (closure-env proc)
+                                                       (closure-args proc)
+                                                       args)))
+        (else)))
 
 ;; main ------------------------------------------------------------------------
 
