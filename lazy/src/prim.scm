@@ -40,4 +40,10 @@
   ;; char
 
   ;; string
+
+  ;; IO
+  (write . ,write)
+  (display . ,display)
+  (print . ,print)
+  (newline . ,newline)
   ))

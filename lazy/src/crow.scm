@@ -3,6 +3,7 @@
 ;; Released under the MIT license.
 
 (import (chicken format)
+        (chicken process-context)
         simple-exceptions)
 
 ;; proc ------------------------------------------------------------------------
@@ -116,19 +117,27 @@
 
 (define toplevel (env-toplevel))
 
-(define (main #!optional (eval-count 0))
-  (printf "#;~A> " eval-count)
-  (define sexp (read))
-  (define res (crow-eval! sexp toplevel))
-  (unless (eq? res (void)) (write res) (newline))
-  (main (+ eval-count 1)))
+(define should-print #t)
 
-(print "CROW MCE (lazy) v0.0.0")
-(print "(C) Robert Coffey 2022")
+(define (main #!optional (eval-count 0))
+  (when should-print
+    (printf "#;~A> " eval-count))
+  (define sexp (read))
+  (unless (eof-object? sexp)
+    (let ((res (crow-eval! sexp toplevel)))
+      (unless (eq? res (void)) (write res) (newline)))
+    (main (+ eval-count 1))))
 
 ;;(letrec ((handler (lambda (exn)
 ;;                    (print (message exn))
 ;;                    (with-exn-handler handler main))))
 ;;  (with-exn-handler handler main))
 
-(main)
+(let* ((args (command-line-arguments))
+       (argc (length args)))
+  (if (> argc 0)
+      (begin (set! should-print #f)
+             (with-input-from-file (car args) main))
+      (begin (print "CROW MCE (lazy) v0.0.0")
+             (print "(C) Robert Coffey 2022")
+             (main))))

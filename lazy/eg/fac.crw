@@ -2,3 +2,16 @@
   (lambda (n)
     (cond ((= n 0) 1)
           (else (* n (fac (- n 1)))))))
+
+(def! %loop
+  (lambda (w n)
+    (cond ((<= w n)
+           (body (display "fac(")
+                 (display w)
+                 (display ") = ")
+                 (print (fac w))
+                 (%loop (+ w 1) n))))))
+
+(def! loop (lambda (n) (%loop 0 n)))
+
+(loop 5)
