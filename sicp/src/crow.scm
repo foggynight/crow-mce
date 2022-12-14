@@ -306,7 +306,8 @@
 
 ;; repl ------------------------------------------------------------------------
 
-(define (display-banner) (display "CROW MCE v0.1.0\n(C) 2022 Robert Coffey\n"))
+(define (display-banner) (print "CROW MCE (sicp) v0.1.0")
+                         (print "(C) 2022 Robert Coffey"))
 (define (display-prompt) (display "> "))
 
 (define (crow-repl ip #!optional prompt)
